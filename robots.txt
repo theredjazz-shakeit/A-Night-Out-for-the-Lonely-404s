@@ -1,0 +1,84 @@
+User-Agent: *
+Disallow: /
+
+# We definitely don't want anyone looking in here...
+# ==========================================
+# Legitimate bots must not crawl these paths
+# ==========================================
+User-agent: *
+
+# Cloud & AI Credentials
+Disallow: /*.aws/
+Disallow: /*.aws$
+Disallow: /*.gcloud/
+Disallow: /*.azure/
+Disallow: /*.claude/
+Disallow: /*.anthropic/
+Disallow: /*.hermes/
+Disallow: /*.openclaw/
+Disallow: /*.mcp.json$
+
+# Environment & Config Files
+Disallow: /*.env*
+Disallow: /*env.backup$
+Disallow: /*.yaml$
+Disallow: /*application.yml$
+Disallow: /*service-account.json$
+Disallow: /*sftp.json$
+Disallow: /*sftp-config.json$
+Disallow: /*vercel.json$
+Disallow: /*docker-compose.yml$
+Disallow: /*.npmrc$
+Disallow: /*sendgrid*
+
+# CI/CD, Container, & Version Control
+Disallow: /*.git/
+Disallow: /*.github/
+Disallow: /*.svn/
+Disallow: /*.circleci/
+Disallow: /*.docker/
+Disallow: /*.kube/
+
+# IDE & OS Hidden Files
+Disallow: /*.vscode/
+Disallow: /*.cursor/
+Disallow: /*.DS_Store$
+Disallow: /*.inv$
+Disallow: /*.ste$
+Disallow: /*.well-known/
+Disallow: /*_fragment*
+
+# Database & Backups
+Disallow: /*.sql$
+Disallow: /*.bak$
+Disallow: /*phpMyAdmin*
+
+# Specific Vulnerable/Targeted Endpoints
+Disallow: /*wp-config.php*
+Disallow: /*wp_filemanager.php$
+Disallow: /*admin.php$
+Disallow: /*phpinfo.php$
+Disallow: /*info.php$
+Disallow: /*xmlrpc.php$
+Disallow: /*xmlrpc.inc$
+Disallow: /*RPC.php$
+Disallow: /+CSCOE+/
+Disallow: /*dniapi/userInfos*
+Disallow: /*this_is_a_new_hello_world.php$
+Disallow: /*nmaplowercheck*
+Disallow: /*applinks/1.0/manifest$
+Disallow: /*cgi-mod/header_logo.cgi$
+Disallow: /*human.aspx*
+Disallow: /*@fs/*
+Disallow: /*CFIDE*
+Disallow: /*geoserver*
+Disallow: /*owa/*
+Disallow: /*etc/passwd*
+Disallow: /*etc/shadow*
+Disallow: /*.csv$
+
+# Legacy & Source Code Probes
+Disallow: /*localstart.aspx$
+Disallow: /*inicio.cgi$
+Disallow: /*base.inc$
+
