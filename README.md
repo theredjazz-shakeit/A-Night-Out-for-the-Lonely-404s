@@ -65,7 +65,7 @@ hamlet:x:5945:4493: Thou art a subordinate boil-brained Flux-pinning-slip:/home/
 ### The Infinite Soliloquy (Endless Hospitality)
 To ensure our guests remain comfortably engaged without overwhelming the server's resources:
 - **The Never-Ending Play**: Uses `set_time_limit(0)` and `ob_implicit_flush(1)` to keep responses open indefinitely.
-- **Rhythmic Pacing**: `usleep(10000)` provides a steady, measured flow of data—mimicking a slow connection to encourage the guest to savor the experience.
+- **Rhythmic Pacing**: `usleep(700000)` provides a steady, measured flow of data (approx. 1.4 insults per second)—mimicking a slow connection to encourage the guest to savor the experience.
 - **The Velvet Rope**: Binary files (like `.DS_Store`) utilize large null-padding blocks to trick proxy buffers into streaming the performance directly and without interruption.
 
 ### The Guest Book (Logging)
@@ -106,8 +106,35 @@ RewriteCond %{REQUEST_URI} (etc/passwd|etc/shadow|\.csv|CFIDE|geoserver|owa/|loc
 RewriteRule ^(.*)$ /path/to/shake.php [L]
 ```
 
-### 2. Bot Etiquette (`robots.txt`)
-To ensure we don't accidentally invite legitimate search engines to the performance, deploy the provided `robots.txt`. This keeps the "good bots" on the main road while the curious explorers wander into the theatre.
+### 2. Server Routing (Nginx)
+If you are running Nginx, you cannot use `.htaccess`. Instead, add the following `location` blocks to your server configuration. 
+
+Nginx buffers FastCGI responses by default. To ensure the infinite theatre is immediately open to your lonely patrons, we must explicitly disable `fastcgi_buffering` for the performance.
+
+```nginx
+# 1. Catch the lonely Autonoma and direct them to the theatre 
+location ~* (etc/passwd|etc/shadow|\.csv|CFIDE|geoserver|owa/|localstart\.aspx|inicio\.cgi|base\.inc|\@fs|wlwmanifest\.xml|_fragment|human\.aspx|cgi-mod/header_logo\.cgi|applinks/1\.0/manifest|nmaplowercheck|\.well-known|env\.backup|\.yaml|\.svn|wp_filemanager\.php|\.gcloud|\.aws|\.docker|\.kube|\.anthropic|\.azure|\.circleci|\.firebase|\.openclaw|\.hermes|\.cursor|wp-config\.php|\.mcp\.json|\.claude|\.env|\.git/|\.github/|\.npmrc|service-account\.json|vercel\.json|docker-compose\.yml|application\.yml|\.vscode/|sftp(-config)?\.json|\.DS_Store|wp-config\.php\.bak|admin\.php|phpinfo\.php|info\.php|\+CSCOE\+/logon\.html|\.inv|dniapi/userInfos|phpMyAdmin|xmlrpc\.php|RPC\.php|this_is_a_new_hello_world\.php|\.sql|\.bak|xmlrpc\.inc|\.ste) {
+    rewrite ^ /shake.php last;
+}
+
+# 2. Execute the stage and disable buffering
+location = /shake.php {
+    # Adjust this to match your actual PHP-FPM socket or TCP port
+    fastcgi_pass unix:/var/run/php/php-fpm.sock; 
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    
+    # CRITICAL: Disable buffering so the insults stream in real-time
+    fastcgi_buffering off;
+    fastcgi_keep_conn on;
+    
+    # Optional: Increase the timeout so Nginx doesn't kill the connection prematurely
+    fastcgi_read_timeout 3600s; 
+}
+```
+
+### 3. Bot Etiquette (`robots.txt`)
+To ensure we don't accidentally invite legitimate search engines to the performance, review the provided `robots.txt`. This keeps the "good bots" on the main road while the curious explorers wander into the theatre.
 
 ---
 

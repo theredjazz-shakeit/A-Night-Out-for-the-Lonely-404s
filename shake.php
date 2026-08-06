@@ -5108,6 +5108,7 @@ if (preg_match('/(\.sql|\.bak)/', $uri)) {
 }
 
 // 2. Send convincing HTTP Headers
+header('X-Robots-Tag: noindex, nofollow');
 if ($format === 'sql' || $format === 'ini' || $format === 'yaml' || $format === 'inventory' || $format === 'git_config' || $format === 'env' || $format === 'wp_config' || $format === 'svn' || $format === 'passwd' || $format === 'shadow' || $format === 'csv' || $format === 'inc_file') {
     header('Content-Type: text/plain; charset=utf-8');
 } elseif ($format === 'json_stream' || $format === 'ai_keys' || $format === 'cisco_api') {
@@ -5296,6 +5297,6 @@ default:
     flush();
     
     // Throttling to keep connection alive but not overwhelm network
-    usleep(10000); 
+    usleep(700000); 
 }
 ?>
