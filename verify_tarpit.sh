@@ -24,6 +24,16 @@ PATHS=(
     ".openclaw"
     ".hermes"
     ".cursor"
+    ".s3cfg"
+    ".boto"
+    "secrets.json"
+    "key.json"
+    "keys.json"
+    "gcp-credentials.json"
+    "credentials.json"
+    "token.json"
+    "env.json"
+    "firebase.json"
     
     # K8s/Docker
     ".docker"
@@ -31,6 +41,7 @@ PATHS=(
     ".yaml"
     "docker-compose.yml"
     "application.yml"
+    "config.yml"
     
     # Version Control
     ".git/config"
@@ -42,6 +53,11 @@ PATHS=(
     "env.backup"
     ".inv"
     "sftp-config.json"
+    "config.py"
+    "application.properties"
+    "local_settings.py"
+    "web.config"
+    "api/config"
     
     # WordPress/PHP
     "wp-config.php"
@@ -58,6 +74,8 @@ PATHS=(
     "etc/passwd"
     "rootkey.csv"
     ".csv"
+    ".htpasswd"
+    ".secret"
     
     # Legacy/Corp
     "CFIDE"
@@ -66,10 +84,19 @@ PATHS=(
     "localstart.aspx"
     "inicio.cgi"
     "base.inc"
+    "phpmyadmin"
+    "pma"
+    "dbadmin"
+    "default.asp"
     
     # Cisco/VPN
     "+CSCOE+/logon.html"
     "dniapi/userInfos"
+    
+    # Actuators
+    "actuator/heapdump"
+    "actuator/env"
+    "actuator/configprops"
     
     # Others
     ".DS_Store"
@@ -92,7 +119,7 @@ for PATH_ITEM in "${PATHS[@]}"; do
     
     # Use curl to get the first 5 lines. 
     # The 'head' command will close the pipe, which terminates the curl connection.
-    RESPONSE=$(curl -sL --max-time 3 "$FULL_URL" | head -n 5)
+    RESPONSE=$(curl -sL --max-time 3 "$FULL_URL" | head -n 7)
     
     if [ -z "$RESPONSE" ]; then
         echo "FAILED (Empty response)"

@@ -18,15 +18,16 @@ The system observes the `REQUEST_URI` and dynamically adjusts its persona to ens
 
 | Guest Interest | Mimicked Format | Performance Characteristics |
 | :--- | :--- | :--- |
-| **Cloud Infra** | `.ini` / `.env` | AWS/Azure styles or `KEY=VALUE` pairs of wit |
+| **Cloud Infra** | `.ini` / `.env` / `.s3cfg` / `.boto` | AWS/Azure styles or `KEY=VALUE` pairs of wit |
 | **Containers/K8s**| `.yaml` / `.json` | Kubernetes Secrets composed of poetic jibes |
-| **AI/LLM Keys** | `.json` | Fake API keys that lead to nowhere |
-| **Version Control**| `.git` / `.svn` | Git config remotes leading back to the Globe Theatre |
-| **OS Secrets** | `/etc/passwd` / `/etc/shadow` | Realistic accounts; shadow passwords are base64-encoded insults |
-| **CMS/Web** | `.php` / `.xml` | WordPress configs and XML streams of irony |
-| **Corporate Web** | `.aspx` / `.cgi` | "Royal Court" login portals with infinite loading states |
+| **API Secrets** | `.json` / `credentials.json` | Realistic cloud keys (GCP/Firebase) filled with irony |
+| **Version Control**| `.git` / `.svn` | Git config remotes or SVN entries leading back to the Globe |
+| **OS / Auth Secrets**| `/etc/passwd` / `/etc/shadow` / `.htpasswd` | Realistic accounts; shadow/htpasswd are base64-encoded insults |
+| **CMS/Web** | `.php` / `.xml` / `web.config` | WordPress configs and XML streams of irony |
+| **Corporate Web** | `.aspx` / `.cgi` / `phpmyadmin` | "Royal Court" portals or DB admin panels with infinite loading |
 | **Network/VPN** | `.html` / `.json` | Cisco AnyConnect portals serving royal decrees |
 | **Database** | `.sql` / `.bak` | MySQL Dump structural headers filled with prose |
+| **Enterprise Java** | `heapdump` / `env` / `configprops` | Java Heap Dumps (magic bytes) and Spring properties |
 | **System/Misc** | `.DS_Store` / `.inv` | 8KB null-padded binaries to keep the audience waiting |
 
 ---
