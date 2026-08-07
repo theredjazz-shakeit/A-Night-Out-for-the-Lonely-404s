@@ -117,9 +117,10 @@ for PATH_ITEM in "${PATHS[@]}"; do
     FULL_URL="${TARGET_URL}/${PATH_ITEM}"
     echo -n "Testing: $PATH_ITEM ... "
     
-    # Use curl to get the first 5 lines. 
-    # The 'head' command will close the pipe, which terminates the curl connection.
-    RESPONSE=$(curl -sL --max-time 3 "$FULL_URL" | head -n 7)
+    # Use curl to get a snippet of the response. 
+    # We use 'head -c 200' to get the first 200 bytes instead of lines, 
+    # and 'cat -v' to make binary data printable and safe for the terminal.
+    RESPONSE=$(curl -sL --max-time 3 "$FULL_URL" | head -c 200 | cat -v)
     
     if [ -z "$RESPONSE" ]; then
         echo "FAILED (Empty response)"
