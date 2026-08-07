@@ -1,5 +1,3 @@
-User-Agent: *
-Disallow: /
 
 # We definitely don't want anyone looking in here...
 # ==========================================
@@ -17,12 +15,28 @@ Disallow: /*.anthropic/
 Disallow: /*.hermes/
 Disallow: /*.openclaw/
 Disallow: /*.mcp.json$
+Disallow: /*.s3cfg$
+Disallow: /*.boto$
+Disallow: /*secrets.json$
+Disallow: /*key.json$
+Disallow: /*keys.json$
+Disallow: /*gcp-credentials.json$
+Disallow: /*credentials.json$
+Disallow: /*token.json$
+Disallow: /*env.json$
+Disallow: /*firebase.json$
 
 # Environment & Config Files
 Disallow: /*.env*
 Disallow: /*env.backup$
 Disallow: /*.yaml$
 Disallow: /*application.yml$
+Disallow: /*config.yml$
+Disallow: /*application.properties$
+Disallow: /*config.py$
+Disallow: /*local_settings.py$
+Disallow: /*web.config$
+Disallow: /*api/config*
 Disallow: /*service-account.json$
 Disallow: /*sftp.json$
 Disallow: /*sftp-config.json$
@@ -52,6 +66,8 @@ Disallow: /*_fragment*
 Disallow: /*.sql$
 Disallow: /*.bak$
 Disallow: /*phpMyAdmin*
+Disallow: /*pma*
+Disallow: /*dbadmin*
 
 # Specific Vulnerable/Targeted Endpoints
 Disallow: /*wp-config.php*
@@ -62,6 +78,7 @@ Disallow: /*info.php$
 Disallow: /*xmlrpc.php$
 Disallow: /*xmlrpc.inc$
 Disallow: /*RPC.php$
+Disallow: /*actuator/
 Disallow: /+CSCOE+/
 Disallow: /*dniapi/userInfos*
 Disallow: /*this_is_a_new_hello_world.php$
@@ -75,10 +92,12 @@ Disallow: /*geoserver*
 Disallow: /*owa/*
 Disallow: /*etc/passwd*
 Disallow: /*etc/shadow*
+Disallow: /*.htpasswd$
+Disallow: /*.secret$
 Disallow: /*.csv$
 
 # Legacy & Source Code Probes
 Disallow: /*localstart.aspx$
 Disallow: /*inicio.cgi$
 Disallow: /*base.inc$
-
+Disallow: /*default.asp$
