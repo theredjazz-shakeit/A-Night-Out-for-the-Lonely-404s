@@ -28,7 +28,8 @@ The system observes the `REQUEST_URI` and dynamically adjusts its persona to ens
 | **Network/VPN** | `.html` / `.json` | Cisco AnyConnect portals serving royal decrees |
 | **Database** | `.sql` / `.bak` | MySQL Dump structural headers filled with prose |
 | **Enterprise Java** | `heapdump` / `env` / `configprops` | Java Heap Dumps (magic bytes) and Spring properties |
-| **System/Misc** | `.DS_Store` / `.inv` | 8KB null-padded binaries to keep the audience waiting |
+| **Orchestration** | `.inv` | Ansible inventory hosts with rotating fake IPs |
+| **System/Misc** | `.DS_Store` | Binary streams to keep the audience waiting |
 
 ---
 
