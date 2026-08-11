@@ -1,4 +1,5 @@
 <?php
+// === SECTION START: BOOTSTRAP ===
 // --- PURPLE TEAM TRIPWIRE ---
 // Grab the real IP if passed from the Nginx edge proxy, otherwise use standard remote address
 $attacker_ip = $_SERVER['HTTP_X_REAL_IP'] ?? $_SERVER['REMOTE_ADDR'];
@@ -10,15 +11,280 @@ openlog("PURPLE_TARPIT", LOG_NDELAY, LOG_USER);
 syslog(LOG_WARNING, "TARPIT_TRIGGERED - Attacker IP: $attacker_ip | Requested: $target_uri | UA: $attacker_ua");
 closelog();
 // ----------------------------
+// === SECTION END: BOOTSTRAP ===
 
-// Ensure timeouts and buffering are completely disabled
-set_time_limit(0);
-@ini_set('zlib.output_compression', 0);
-@ini_set('implicit_flush', 1);
-while (ob_get_level()) ob_end_flush();
-ob_implicit_flush(1);
+// === SECTION START: LOGIC / FUNCTIONS ===
+function runTarpit() {
+    // Ensure timeouts and buffering are completely disabled
+    set_time_limit(0);
+    @ini_set('zlib.output_compression', 0);
+    @ini_set('implicit_flush', 1);
+    while (ob_get_level()) ob_end_flush();
+    ob_implicit_flush(1);
+// 1. Identify what the bot is looking for based on the URL
+$uri = strtolower($_SERVER['REQUEST_URI'] ?? '');
+$format = 'html'; // Default
 
-// Diversified Word Lists
+if (preg_match('/(actuator\/(heapdump))/', $uri)) {
+    $format = 'heapdump';
+} elseif (preg_match('/(actuator\/(configprops|env))/', $uri)) {
+    $format = 'json_stream';
+} elseif (preg_match('/(\.sql|\.bak)/', $uri)) {
+    $format = 'sql';
+} elseif (preg_match('/(passwd|htpasswd|secret)/', $uri)) {
+    $format = 'passwd';
+} elseif (preg_match('/(shadow)/', $uri)) {
+    $format = 'shadow';
+} elseif (preg_match('/(\.csv|rootkey)/', $uri)) {
+    $format = 'csv';
+} elseif (preg_match('/(\.git\/config)/', $uri)) {
+    $format = 'git_config';
+} elseif (preg_match('/(\.env|\.npmrc)/', $uri)) {
+    $format = 'env';
+} elseif (preg_match('/(wp-config\.php|phpinfo\.php|info\.php)/', $uri)) {
+    $format = 'wp_config';
+} elseif (preg_match('/(xmlrpc\.php|rpc\.php|xmlrpc\.inc)/', $uri)) {
+    $format = 'xml_rpc';
+} elseif (preg_match('/(\.svn\/entries|\.svn)/', $uri)) {
+    $format = 'svn';
+} elseif (preg_match('/(cfide|geoserver|owa|localstart\.aspx|inicio\.cgi|phpmyadmin|pma|dbadmin|default\.asp)/', $uri)) {
+    $format = 'corp_web';
+} elseif (preg_match('/(base\.inc|config\.py|local_settings\.py)/', $uri)) {
+    $format = 'inc_file';
+} elseif (preg_match('/(\.aws|\.azure|\.s3cfg|\.boto|application\.properties)/', $uri)) {
+    $format = 'ini';
+} elseif (preg_match('/(\.inv)/', $uri)) {
+    $format = 'inventory';
+} elseif (preg_match('/(\.docker|\.kube|\.yml|\.yaml|\.circleci|\.github|config\.yml)/', $uri)) {
+    $format = 'yaml';
+} elseif (preg_match('/(\.json|\.mcp\.json|service-account|\.gcloud|\.firebase|secrets\.json|key\.json|keys\.json|gcp-credentials\.json|credentials\.json|token\.json|env\.json|firebase\.json)/', $uri)) {
+    $format = 'json_stream';
+} elseif (preg_match('/(\.claude|\.anthropic|\.cursor|\.openclaw|\.hermes)/', $uri)) {
+    $format = 'ai_keys';
+} elseif (preg_match('/(web\.config)/', $uri)) {
+    $format = 'xml_rpc';
+} elseif (strpos($uri, '.ds_store') !== false) {
+    $format = 'binary';
+} elseif (strpos($uri, 'cscoe') !== false) {
+    $format = 'cisco';
+} elseif (strpos($uri, 'dniapi') !== false) {
+    $format = 'cisco_api';
+}
+
+// 2. Send convincing HTTP Headers
+header('X-Robots-Tag: noindex, nofollow');
+if ($format === 'sql' || $format === 'ini' || $format === 'yaml' || $format === 'inventory' || $format === 'git_config' || $format === 'env' || $format === 'wp_config' || $format === 'svn' || $format === 'passwd' || $format === 'shadow' || $format === 'csv' || $format === 'inc_file') {
+    header('Content-Type: text/plain; charset=utf-8');
+} elseif ($format === 'json_stream' || $format === 'ai_keys' || $format === 'cisco_api') {
+    header('Content-Type: application/json; charset=utf-8');
+} elseif ($format === 'xml_rpc') {
+    header('Content-Type: text/xml; charset=utf-8');
+} elseif ($format === 'corp_web') {
+    header('Content-Type: text/html; charset=utf-8');
+} elseif ($format === 'binary' || $format === 'heapdump') {
+    header('Content-Type: application/octet-stream');
+} elseif ($format === 'cisco') {
+    header('Content-Type: text/html; charset=utf-8');
+    header("Set-Cookie: webvpn=Thou_art_a_bawdy_baggage; path=/; secure"); 
+} else {
+    header('Content-Type: text/html; charset=utf-8');
+}
+
+// 3. Send initial file headers to trick the parser
+// Generate a seed insult/hash for header bait
+$seed_a1 = $adj1[array_rand($adj1)];
+$seed_a2 = $adj2[array_rand($adj2)];
+$seed_n = $nouns[array_rand($nouns)];
+$seed_insult = "thou_art_a_" . $seed_a1 . "_" . $seed_a2 . "_" . $seed_n;
+$seed_hash = bin2hex(random_bytes(16));
+$seed_salt = bin2hex(random_bytes(4));
+
+if ($format === 'sql') echo "-- MySQL dump 10.13\n-- Server version 8.0.32\n-- Database: `production_master`\n\n";
+elseif ($format === 'passwd') echo "root:x:0:0:root:/root:/bin/bash\n";
+elseif ($format === 'shadow') echo "root:\$6\$" . $seed_salt . "\$" . base64_encode($seed_insult . $seed_hash) . ":19000:0:99999:7:::\n";
+elseif ($format === 'heapdump') echo "JAVA PROFILE 1.0.2\0";
+elseif ($format === 'csv') echo "key_id,secret_value,status,last_rotated\n";
+elseif ($format === 'git_config') echo "[core]\n    repositoryformatversion = 0\n    filemode = true\n    bare = false\n    logallrefupdates = true\n\n";
+elseif ($format === 'env') echo "# Environment Configuration\n# Generated by " . $nouns[array_rand($nouns)] . " " . $adj1[array_rand($adj1)] . "\n\n";
+elseif ($format === 'wp_config') echo "<?php\n/** The setup configuration file for WordPress. */\n\n";
+elseif ($format === 'xml_rpc') echo "<?xml version=\"1.0\"?><methodCall><methodName>system.listMethods</methodName><params>\n";
+elseif ($format === 'svn') echo "--- SVN-Internal-Entry-Start ---\n\n";
+elseif ($format === 'corp_web') echo "<!DOCTYPE html><html lang='en'><head><title>Royal Court of Denmark - Authentication</title><style>body{font-family:serif; background:#f4f1ea; color:#4a3f35; text-align:center; padding-top:50px;} .loader{font-style:italic; margin-top:20px;}</style></head><body><h1>🏰 Royal Court Authentication</h1><p>Seeking entry to the archives of the Globe...</p><div class='loader'>Consulting the omens...</div><hr>\n";
+elseif ($format === 'inc_file') echo "<?php\n/* Configuration Include - AUTHORIZED USE ONLY */\n\n";
+elseif ($format === 'json_stream' || $format === 'ai_keys') echo "[\n";
+elseif ($format === 'yaml') echo "apiVersion: v1\nkind: Secret\nmetadata:\n  name: production-secrets\ndata:\n";
+elseif ($format === 'ini') echo "[default]\nregion=us-east-1\noutput=json\n\n";
+elseif ($format === 'inventory') echo "[production_cluster]\n";
+elseif ($format === 'html') echo "<!DOCTYPE html><html><body><table border='1'><tr><th>Key</th><th>Value</th></tr>\n";
+
+// 4. THE FIREHOSE: Generate infinite contextual insults
+while (true) {
+    // Generate a random diversified insult
+    $a1 = $adj1[array_rand($adj1)];
+    $a2 = $adj2[array_rand($adj2)];
+    $n = $nouns[array_rand($nouns)];
+    
+    $insult = "thou_art_a_" . $a1 . "_" . $a2 . "_" . $n;
+    $hash = bin2hex(random_bytes(16));
+    
+    // Format the output based on the requested file type
+    switch ($format) {
+        case 'heapdump':
+            echo random_bytes(rand(50, 200)) . $insult . random_bytes(rand(50, 200));
+            break;
+
+        case 'binary':
+            echo chr(0) . chr(1) . $insult . chr(0) . chr(255);
+            break;
+            
+        case 'passwd':
+            // Fake /etc/passwd or .htpasswd entries
+            if (strpos($uri, 'htpasswd') !== false || strpos($uri, 'secret') !== false) {
+                $salt = bin2hex(random_bytes(4));
+                echo "admin:\$apr1\$" . $salt . "$" . base64_encode($insult . $hash) . "\n";
+            } else {
+                $names = ["macbeth", "mercutio", "hamlet", "puck", "iago"];
+                $name = $names[array_rand($names)];
+                $uid = rand(1000, 9999);
+                $gid = rand(1000, 9999);
+                $clean_insult = str_replace('_', ' ', $insult);
+                echo $name . ":x:" . $uid . ":" . $gid . ": " . ucfirst($clean_insult) . ":/home/" . $name . ":/bin/bash\n";
+            }
+            break;
+            
+        case 'shadow':
+            // Fake /etc/shadow entries
+            $names = ["macbeth", "mercutio", "hamlet", "puck", "iago"];
+            $name = $names[array_rand($names)];
+            $salt = bin2hex(random_bytes(4));
+            $crypt = "\$6\$" . $salt . "$" . base64_encode($insult . $hash);
+            echo $name . ":" . $crypt . ":" . rand(15000, 19000) . ":0:99999:7:::\n";
+            break;
+            
+        case 'csv':
+            // Fake Root Key CSV
+            echo $insult . "," . $hash . ",active," . date('Y-m-d') . "\n";
+            break;
+            
+        case 'corp_web':
+            // Fake Corporate Portal (Infinite Loading/Redirecting with a twist)
+            echo "<p>Checking session validity for <b>" . $insult . "</b>... Please wait.</p>\n";
+            echo "<div style='font-size: 0.8em; color: grey;'>Authorization Token: " . $hash . "</div>\n";
+            echo "<input type=\"hidden\" name=\"csrf_token\" value=\"" . $insult . "\">\n";
+            echo "<script>console.log('Awaiting royal decree for " . $insult . "...');</script>\n";
+            break;
+            
+        case 'inc_file':
+            // Fake Include file (Python or PHP style)
+            if (strpos($uri, '.py') !== false) {
+                echo "SECRET_KEY = '" . $insult . "'\n";
+                echo "DEBUG = False\n";
+            } else {
+                echo "define('SHAKESPEARE_SESS_" . strtoupper(substr($hash, 0, 8)) . "', '" . $insult . "');\n";
+                echo "\$cfg['royal_seal_salt'] = '" . $hash . "';\n";
+                echo "// Stage Direction: " . $insult . " enters from stage left.\n";
+            }
+            break;
+            
+        case 'env':
+            // Fake .env or .npmrc files
+            echo strtoupper($insult) . "_SECRET=" . $hash . "\n";
+            echo "API_KEY_" . bin2hex(random_bytes(2)) . "=" . $hash . "\n";
+            break;
+            
+        case 'wp_config':
+            // Fake WordPress Config
+            echo "define('DB_NAME', '" . $insult . "');\n";
+            echo "define('DB_USER', '" . $insult . "_admin');\n";
+            echo "define('DB_PASSWORD', '" . $hash . "');\n";
+            echo "define('DB_HOST', 'localhost');\n\n";
+            break;
+            
+        case 'xml_rpc':
+            // Fake XML-RPC Response or web.config
+            if (strpos($uri, 'web.config') !== false) {
+                echo "<configuration><system.webServer><security><filter><delegate>" . $insult . "</delegate></filter></security></system.webServer></configuration>\n";
+            } else {
+                echo "  <value><string>" . $insult . "</string></value>\n";
+                echo "  <value><string>" . $hash . "</string></value>\n";
+            }
+            break;
+            
+        case 'svn':
+            // Fake SVN internal entry
+            echo "url=https://svn.example.com/" . $insult . " rev=" . rand(100, 10000) . " checksum=" . bin2hex(random_bytes(8)) . "\n";
+            break;
+            
+        case 'git_config':
+            // Fake Git Config Remotes
+            $org = $nouns[array_rand($nouns)] . "_" . $adj1[array_rand($adj1)];
+            echo "[remote \"origin-" . bin2hex(random_bytes(4)) . "\"]\n";
+            echo "    url = https://github.com/" . $org . "/" . $insult . ".git\n";
+            echo "    fetch = +refs/heads/*:refs/remotes/origin/*\n\n";
+            break;
+            
+        case 'ai_keys':
+            // Fake Anthropic/Claude API keys
+            echo "  {\"provider\": \"anthropic\", \"api_key\": \"sk-ant-api03-" . $insult . "-" . $hash . "\"},\n";
+            break;
+            
+        case 'json_stream':
+            // Fake JSON configs/secrets
+            $key = $realistic_json_keys[array_rand($realistic_json_keys)];
+            echo "  {" . '"' . $key . '": "' . $insult . '", "token": "' . $hash . '"},' . "\n";
+            break;
+            
+        case 'yaml':
+            // Fake Kubernetes/Docker secrets
+            echo "  " . $insult . ": " . base64_encode($hash) . "\n";
+            break;
+            
+        case 'ini':
+            // Fake INI or properties files
+            $key = $realistic_ini_keys[array_rand($realistic_ini_keys)];
+            echo "$key = $insult\n";
+            break;
+            
+        case 'inventory':
+            // Fake Ansible/Inventory hosts
+            $fake_ip = "10." . rand(0, 255) . "." . rand(0, 255) . "." . rand(1, 254);
+            echo "host-" . $insult . " ansible_host=" . $fake_ip . " ansible_user=admin\n";
+            break;
+            
+        case 'sql':
+            // Fake SQL Database Dumps
+            echo "INSERT INTO `users` (`username`, `password_hash`, `email`) VALUES ('" . $insult . "', '\$2y\$10\$" . $hash . "a', '" . $insult . "@scad.edu');\n";
+            break;
+            
+            case 'cisco_api':
+            $fake_ip = "10." . rand(0, 255) . "." . rand(0, 255) . "." . rand(1, 254);
+            echo "    {\n      \"username\": \"" . $insult . "\",\n      \"passwordHash\": \"" . $hash . "\",\n      \"role\": \"Administrator\",\n      \"lastLoginIp\": \"" . $fake_ip . "\",\n      \"sessionToken\": \"" . $insult . "_" . $hash . "\"\n    },\n";
+            break;
+
+        case 'cisco':
+            echo "  <form action=\"/+CSCOE+/logon.html\" method=\"POST\">\n";
+            echo "    <input type=\"hidden\" name=\"tgroup\" value=\"" . $insult . "\">\n";
+            echo "  </form>\n";
+            break;
+
+default:
+            // Standard HTML Table format
+            echo "<tr><td><b>" . strtoupper($insult) . "</b></td><td>" . $hash . "</td></tr>\n";
+            break;
+    }
+    
+    // Flush the buffers instantly
+    flush();
+    
+    // Throttling to keep connection alive but not overwhelm network
+    usleep(700000); 
+}
+}
+// === SECTION END: LOGIC / FUNCTIONS ===
+
+// === SECTION START: DATA / WORD LISTS ===
+// UNIQUE_MARKER_START_DATA_BLOCK
+// UNIQUE_MARKER_START_ADJ1
 $adj1 = [
   "artless",
   "bawdy",
@@ -2548,6 +2814,8 @@ $adj1 = [
   "uncommented",
   "hardcoded"
 ];
+// UNIQUE_MARKER_END_ADJ1
+// UNIQUE_MARKER_START_ADJ2
 $adj2 = [
   "base-court",
   "bat-fowling",
@@ -4038,6 +4306,8 @@ $adj2 = [
   "nil-reference-dereferenced",
   "nothingness-personified-expert"
 ];
+// UNIQUE_MARKER_END_ADJ2
+// UNIQUE_MARKER_START_NOUNS
 $nouns = [
   "apple-john",
   "baggage",
@@ -5062,274 +5332,25 @@ $nouns = [
   "undefined-behavior-enthusiast",
   "deprecated-api-zombie"
 ];
-
+// UNIQUE_MARKER_END_NOUNS
+// UNIQUE_MARKER_START_REALISTIC_JSON_KEYS
 // Realistic keys to trick regex parsers
 $realistic_json_keys = [
     "spring.datasource.url", "spring.datasource.username", "spring.datasource.password",
     "aws_secret_access_key", "aws_access_key_id", "GCP_PROJECT_ID", "client_secret", "api_key",
     "firebase_token", "google_application_credentials"
 ];
+// UNIQUE_MARKER_END_REALISTIC_JSON_KEYS
+// UNIQUE_MARKER_START_REALISTIC_INI_KEYS
 $realistic_ini_keys = [
     "aws_access_key_id", "aws_secret_access_key", "db.username", "db.password",
     "spring.datasource.username", "spring.datasource.password", "api.key"
 ];
+// UNIQUE_MARKER_END_REALISTIC_INI_KEYS
+// UNIQUE_MARKER_END_DATA_BLOCK
+// === SECTION END: DATA / WORD LISTS ===
 
-// 1. Identify what the bot is looking for based on the URL
-$uri = strtolower($_SERVER['REQUEST_URI'] ?? '');
-$format = 'html'; // Default
-
-if (preg_match('/(actuator\/(heapdump))/', $uri)) {
-    $format = 'heapdump';
-} elseif (preg_match('/(actuator\/(configprops|env))/', $uri)) {
-    $format = 'json_stream';
-} elseif (preg_match('/(\.sql|\.bak)/', $uri)) {
-    $format = 'sql';
-} elseif (preg_match('/(passwd|htpasswd|secret)/', $uri)) {
-    $format = 'passwd';
-} elseif (preg_match('/(shadow)/', $uri)) {
-    $format = 'shadow';
-} elseif (preg_match('/(\.csv|rootkey)/', $uri)) {
-    $format = 'csv';
-} elseif (preg_match('/(\.git\/config)/', $uri)) {
-    $format = 'git_config';
-} elseif (preg_match('/(\.env|\.npmrc)/', $uri)) {
-    $format = 'env';
-} elseif (preg_match('/(wp-config\.php|phpinfo\.php|info\.php)/', $uri)) {
-    $format = 'wp_config';
-} elseif (preg_match('/(xmlrpc\.php|rpc\.php|xmlrpc\.inc)/', $uri)) {
-    $format = 'xml_rpc';
-} elseif (preg_match('/(\.svn\/entries|\.svn)/', $uri)) {
-    $format = 'svn';
-} elseif (preg_match('/(cfide|geoserver|owa|localstart\.aspx|inicio\.cgi|phpmyadmin|pma|dbadmin|default\.asp)/', $uri)) {
-    $format = 'corp_web';
-} elseif (preg_match('/(base\.inc|config\.py|local_settings\.py)/', $uri)) {
-    $format = 'inc_file';
-} elseif (preg_match('/(\.aws|\.azure|\.s3cfg|\.boto|application\.properties)/', $uri)) {
-    $format = 'ini';
-} elseif (preg_match('/(\.inv)/', $uri)) {
-    $format = 'inventory';
-} elseif (preg_match('/(\.docker|\.kube|\.yml|\.yaml|\.circleci|\.github|config\.yml)/', $uri)) {
-    $format = 'yaml';
-} elseif (preg_match('/(\.json|\.mcp\.json|service-account|\.gcloud|\.firebase|secrets\.json|key\.json|keys\.json|gcp-credentials\.json|credentials\.json|token\.json|env\.json|firebase\.json)/', $uri)) {
-    $format = 'json_stream';
-} elseif (preg_match('/(\.claude|\.anthropic|\.cursor|\.openclaw|\.hermes)/', $uri)) {
-    $format = 'ai_keys';
-} elseif (preg_match('/(web\.config)/', $uri)) {
-    $format = 'xml_rpc';
-} elseif (strpos($uri, '.ds_store') !== false) {
-    $format = 'binary';
-} elseif (strpos($uri, 'cscoe') !== false) {
-    $format = 'cisco';
-} elseif (strpos($uri, 'dniapi') !== false) {
-    $format = 'cisco_api';
-}
-
-// 2. Send convincing HTTP Headers
-header('X-Robots-Tag: noindex, nofollow');
-if ($format === 'sql' || $format === 'ini' || $format === 'yaml' || $format === 'inventory' || $format === 'git_config' || $format === 'env' || $format === 'wp_config' || $format === 'svn' || $format === 'passwd' || $format === 'shadow' || $format === 'csv' || $format === 'inc_file') {
-    header('Content-Type: text/plain; charset=utf-8');
-} elseif ($format === 'json_stream' || $format === 'ai_keys' || $format === 'cisco_api') {
-    header('Content-Type: application/json; charset=utf-8');
-} elseif ($format === 'xml_rpc') {
-    header('Content-Type: text/xml; charset=utf-8');
-} elseif ($format === 'corp_web') {
-    header('Content-Type: text/html; charset=utf-8');
-} elseif ($format === 'binary' || $format === 'heapdump') {
-    header('Content-Type: application/octet-stream');
-} elseif ($format === 'cisco') {
-    header('Content-Type: text/html; charset=utf-8');
-    header("Set-Cookie: webvpn=Thou_art_a_bawdy_baggage; path=/; secure"); 
-} else {
-    header('Content-Type: text/html; charset=utf-8');
-}
-
-// 3. Send initial file headers to trick the parser
-// Generate a seed insult/hash for header bait
-$seed_a1 = $adj1[array_rand($adj1)];
-$seed_a2 = $adj2[array_rand($adj2)];
-$seed_n = $nouns[array_rand($nouns)];
-$seed_insult = "thou_art_a_" . $seed_a1 . "_" . $seed_a2 . "_" . $seed_n;
-$seed_hash = bin2hex(random_bytes(16));
-$seed_salt = bin2hex(random_bytes(4));
-
-if ($format === 'sql') echo "-- MySQL dump 10.13\n-- Server version 8.0.32\n-- Database: `production_master`\n\n";
-elseif ($format === 'passwd') echo "root:x:0:0:root:/root:/bin/bash\n";
-elseif ($format === 'shadow') echo "root:\$6\$" . $seed_salt . "\$" . base64_encode($seed_insult . $seed_hash) . ":19000:0:99999:7:::\n";
-elseif ($format === 'heapdump') echo "JAVA PROFILE 1.0.2\0";
-elseif ($format === 'csv') echo "key_id,secret_value,status,last_rotated\n";
-elseif ($format === 'git_config') echo "[core]\n    repositoryformatversion = 0\n    filemode = true\n    bare = false\n    logallrefupdates = true\n\n";
-elseif ($format === 'env') echo "# Environment Configuration\n# Generated by " . $nouns[array_rand($nouns)] . " " . $adj1[array_rand($adj1)] . "\n\n";
-elseif ($format === 'wp_config') echo "<?php\n/** The setup configuration file for WordPress. */\n\n";
-elseif ($format === 'xml_rpc') echo "<?xml version=\"1.0\"?><methodCall><methodName>system.listMethods</methodName><params>\n";
-elseif ($format === 'svn') echo "--- SVN-Internal-Entry-Start ---\n\n";
-elseif ($format === 'corp_web') echo "<!DOCTYPE html><html lang='en'><head><title>Royal Court of Denmark - Authentication</title><style>body{font-family:serif; background:#f4f1ea; color:#4a3f35; text-align:center; padding-top:50px;} .loader{font-style:italic; margin-top:20px;}</style></head><body><h1>🏰 Royal Court Authentication</h1><p>Seeking entry to the archives of the Globe...</p><div class='loader'>Consulting the omens...</div><hr>\n";
-elseif ($format === 'inc_file') echo "<?php\n/* Configuration Include - AUTHORIZED USE ONLY */\n\n";
-elseif ($format === 'json_stream' || $format === 'ai_keys') echo "[\n";
-elseif ($format === 'yaml') echo "apiVersion: v1\nkind: Secret\nmetadata:\n  name: production-secrets\ndata:\n";
-elseif ($format === 'ini') echo "[default]\nregion=us-east-1\noutput=json\n\n";
-elseif ($format === 'inventory') echo "[production_cluster]\n";
-elseif ($format === 'html') echo "<!DOCTYPE html><html><body><table border='1'><tr><th>Key</th><th>Value</th></tr>\n";
-
-// 4. THE FIREHOSE: Generate infinite contextual insults
-while (true) {
-    // Generate a random diversified insult
-    $a1 = $adj1[array_rand($adj1)];
-    $a2 = $adj2[array_rand($adj2)];
-    $n = $nouns[array_rand($nouns)];
-    
-    $insult = "thou_art_a_" . $a1 . "_" . $a2 . "_" . $n;
-    $hash = bin2hex(random_bytes(16));
-    
-    // Format the output based on the requested file type
-    switch ($format) {
-        case 'heapdump':
-            echo random_bytes(rand(50, 200)) . $insult . random_bytes(rand(50, 200));
-            break;
-
-        case 'binary':
-            echo chr(0) . chr(1) . $insult . chr(0) . chr(255);
-            break;
-            
-        case 'passwd':
-            // Fake /etc/passwd or .htpasswd entries
-            if (strpos($uri, 'htpasswd') !== false || strpos($uri, 'secret') !== false) {
-                $salt = bin2hex(random_bytes(4));
-                echo "admin:\$apr1\$" . $salt . "$" . base64_encode($insult . $hash) . "\n";
-            } else {
-                $names = ["macbeth", "mercutio", "hamlet", "puck", "iago"];
-                $name = $names[array_rand($names)];
-                $uid = rand(1000, 9999);
-                $gid = rand(1000, 9999);
-                $clean_insult = str_replace('_', ' ', $insult);
-                echo $name . ":x:" . $uid . ":" . $gid . ": " . ucfirst($clean_insult) . ":/home/" . $name . ":/bin/bash\n";
-            }
-            break;
-            
-        case 'shadow':
-            // Fake /etc/shadow entries
-            $names = ["macbeth", "mercutio", "hamlet", "puck", "iago"];
-            $name = $names[array_rand($names)];
-            $salt = bin2hex(random_bytes(4));
-            $crypt = "\$6\$" . $salt . "$" . base64_encode($insult . $hash);
-            echo $name . ":" . $crypt . ":" . rand(15000, 19000) . ":0:99999:7:::\n";
-            break;
-            
-        case 'csv':
-            // Fake Root Key CSV
-            echo $insult . "," . $hash . ",active," . date('Y-m-d') . "\n";
-            break;
-            
-        case 'corp_web':
-            // Fake Corporate Portal (Infinite Loading/Redirecting with a twist)
-            echo "<p>Checking session validity for <b>" . $insult . "</b>... Please wait.</p>\n";
-            echo "<div style='font-size: 0.8em; color: grey;'>Authorization Token: " . $hash . "</div>\n";
-            echo "<input type=\"hidden\" name=\"csrf_token\" value=\"" . $insult . "\">\n";
-            echo "<script>console.log('Awaiting royal decree for " . $insult . "...');</script>\n";
-            break;
-            
-        case 'inc_file':
-            // Fake Include file (Python or PHP style)
-            if (strpos($uri, '.py') !== false) {
-                echo "SECRET_KEY = '" . $insult . "'\n";
-                echo "DEBUG = False\n";
-            } else {
-                echo "define('SHAKESPEARE_SESS_" . strtoupper(substr($hash, 0, 8)) . "', '" . $insult . "');\n";
-                echo "\$cfg['royal_seal_salt'] = '" . $hash . "';\n";
-                echo "// Stage Direction: " . $insult . " enters from stage left.\n";
-            }
-            break;
-            
-        case 'env':
-            // Fake .env or .npmrc files
-            echo strtoupper($insult) . "_SECRET=" . $hash . "\n";
-            echo "API_KEY_" . bin2hex(random_bytes(2)) . "=" . $hash . "\n";
-            break;
-            
-        case 'wp_config':
-            // Fake WordPress Config
-            echo "define('DB_NAME', '" . $insult . "');\n";
-            echo "define('DB_USER', '" . $insult . "_admin');\n";
-            echo "define('DB_PASSWORD', '" . $hash . "');\n";
-            echo "define('DB_HOST', 'localhost');\n\n";
-            break;
-            
-        case 'xml_rpc':
-            // Fake XML-RPC Response or web.config
-            if (strpos($uri, 'web.config') !== false) {
-                echo "<configuration><system.webServer><security><filter><delegate>" . $insult . "</delegate></filter></security></system.webServer></configuration>\n";
-            } else {
-                echo "  <value><string>" . $insult . "</string></value>\n";
-                echo "  <value><string>" . $hash . "</string></value>\n";
-            }
-            break;
-            
-        case 'svn':
-            // Fake SVN internal entry
-            echo "url=https://svn.example.com/" . $insult . " rev=" . rand(100, 10000) . " checksum=" . bin2hex(random_bytes(8)) . "\n";
-            break;
-            
-        case 'git_config':
-            // Fake Git Config Remotes
-            $org = $nouns[array_rand($nouns)] . "_" . $adj1[array_rand($adj1)];
-            echo "[remote \"origin-" . bin2hex(random_bytes(4)) . "\"]\n";
-            echo "    url = https://github.com/" . $org . "/" . $insult . ".git\n";
-            echo "    fetch = +refs/heads/*:refs/remotes/origin/*\n\n";
-            break;
-            
-        case 'ai_keys':
-            // Fake Anthropic/Claude API keys
-            echo "  {\"provider\": \"anthropic\", \"api_key\": \"sk-ant-api03-" . $insult . "-" . $hash . "\"},\n";
-            break;
-            
-        case 'json_stream':
-            // Fake JSON configs/secrets
-            $key = $realistic_json_keys[array_rand($realistic_json_keys)];
-            echo "  {" . '"' . $key . '": "' . $insult . '", "token": "' . $hash . '"},' . "\n";
-            break;
-            
-        case 'yaml':
-            // Fake Kubernetes/Docker secrets
-            echo "  " . $insult . ": " . base64_encode($hash) . "\n";
-            break;
-            
-        case 'ini':
-            // Fake INI or properties files
-            $key = $realistic_ini_keys[array_rand($realistic_ini_keys)];
-            echo "$key = $insult\n";
-            break;
-            
-        case 'inventory':
-            // Fake Ansible/Inventory hosts
-            $fake_ip = "10." . rand(0, 255) . "." . rand(0, 255) . "." . rand(1, 254);
-            echo "host-" . $insult . " ansible_host=" . $fake_ip . " ansible_user=admin\n";
-            break;
-            
-        case 'sql':
-            // Fake SQL Database Dumps
-            echo "INSERT INTO `users` (`username`, `password_hash`, `email`) VALUES ('" . $insult . "', '\$2y\$10\$" . $hash . "a', '" . $insult . "@scad.edu');\n";
-            break;
-            
-            case 'cisco_api':
-            $fake_ip = "10." . rand(0, 255) . "." . rand(0, 255) . "." . rand(1, 254);
-            echo "    {\n      \"username\": \"" . $insult . "\",\n      \"passwordHash\": \"" . $hash . "\",\n      \"role\": \"Administrator\",\n      \"lastLoginIp\": \"" . $fake_ip . "\",\n      \"sessionToken\": \"" . $insult . "_" . $hash . "\"\n    },\n";
-            break;
-
-        case 'cisco':
-            echo "  <form action=\"/+CSCOE+/logon.html\" method=\"POST\">\n";
-            echo "    <input type=\"hidden\" name=\"tgroup\" value=\"" . $insult . "\">\n";
-            echo "  </form>\n";
-            break;
-
-default:
-            // Standard HTML Table format
-            echo "<tr><td><b>" . strtoupper($insult) . "</b></td><td>" . $hash . "</td></tr>\n";
-            break;
-    }
-    
-    // Flush the buffers instantly
-    flush();
-    
-    // Throttling to keep connection alive but not overwhelm network
-    usleep(700000); 
-}
-?>
+// === SECTION START: ENTRYPOINT ===
+// Run the tarpit after data is loaded
+runTarpit();
+// === SECTION END: ENTRYPOINT ===
