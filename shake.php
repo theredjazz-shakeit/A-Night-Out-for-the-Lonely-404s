@@ -15,6 +15,7 @@ closelog();
 
 // === SECTION START: LOGIC / FUNCTIONS ===
 function runTarpit() {
+    global $adj1, $adj2, $nouns, $realistic_json_keys, $realistic_ini_keys;
     // Ensure timeouts and buffering are completely disabled
     set_time_limit(0);
     @ini_set('zlib.output_compression', 0);
