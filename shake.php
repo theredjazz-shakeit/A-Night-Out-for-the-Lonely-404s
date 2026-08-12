@@ -271,8 +271,15 @@ while (true) {
             
         case 'json_stream':
             // Fake JSON configs/secrets
-            $key = $realistic_json_keys[array_rand($realistic_json_keys)];
-            echo "  {" . '"' . $key . '": "' . $insult . '", "token": "' . $hash . '"},' . "\n";
+            if (strpos($uri, 'firebase') !== false || strpos($uri, 'service-account') !== false) {
+                // Realistic Firebase Service Account
+                $project_id = 'scad-' . $insult;
+                $private_key = "-----BEGIN PRIVATE KEY-----\n" . base64_encode($insult . $hash) . "\n-----END PRIVATE KEY-----\n";
+                echo "  {" . '"type": "service_account", "project_id": "' . $project_id . '", "private_key_id": "' . $hash . '", "private_key": "' . addcslashes($private_key, '"\\') . '", "client_email": "firebase-admin@' . $project_id . '.iam.gserviceaccount.com", "client_id": "' . bin2hex(random_bytes(8)) . '", "auth_uri": "https://accounts.google.com/o/oauth2/auth", "token_uri": "https://oauth2.googleapis.com/token", "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs", "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-admin@' . $project_id . '.iam.gserviceaccount.com"},' . "\n";
+            } else {
+                $key = $realistic_json_keys[array_rand($realistic_json_keys)];
+                echo "  {" . '"' . $key . '": "' . $insult . '", "token": "' . $hash . '"},' . "\n";
+            }
             break;
             
         case 'yaml':
