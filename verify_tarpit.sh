@@ -122,10 +122,17 @@ for PATH_ITEM in "${PATHS[@]}"; do
     FULL_URL="${TARGET_URL}/${PATH_ITEM}"
     echo -n "Testing: $PATH_ITEM ... "
     
-    # Use curl to get a snippet of the response. 
-    # We use 'head -c 200' to get the first 200 bytes instead of lines, 
-    # and 'cat -v' to make binary data printable and safe for the terminal.
-    RESPONSE=$(curl -sL --max-time 3 "$FULL_URL" | head -c 200 | cat -v)
+    # Use curl to get status and a snippet of the response
+    HTTP_CODE=$(curl -s -o /tmp/tarpit_resp -w "%{http_code}" --max-time 3 "$FULL_URL")
+    RESPONSE=$(head -c 200 /tmp/tarpit_resp | cat -v)
+    if [ "$HTTP_CODE" != "200" ]; then
+        echo "HTTP $HTTP_CODE"
+        echo "--- Response snippet ---"
+        echo "$RESPONSE"
+        echo "------------------------"
+        echo ""
+        continue
+    fi
     
     if [ -z "$RESPONSE" ]; then
         echo "FAILED (Empty response)"
