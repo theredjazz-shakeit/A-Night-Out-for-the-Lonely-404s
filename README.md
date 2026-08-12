@@ -29,6 +29,8 @@ The system observes the `REQUEST_URI` and dynamically adjusts its persona to ens
 | **Database** | `.sql` / `.bak` | MySQL Dump structural headers filled with prose |
 | **Enterprise Java** | `heapdump` / `env` / `configprops` | Java Heap Dumps (magic bytes) and Spring properties |
 | **Orchestration** | `.inv` | Ansible inventory hosts with rotating fake IPs |
+| **SSRF / Cloud Metadata** | `169.254.169.254` query / `aws/credentials` | Fake AWS IMDS IAM Security Credentials JSON with AKIA-prefixed AccessKeyId and Shakespearean tokens |
+| **Linux Kernel** | `/proc/self/environ` | Fake NULL-separated environment variables with `DB_PASSWORD`, `AWS_SECRET_ACCESS_KEY` filled with insults |
 | **System/Misc** | `.DS_Store` | Binary streams to keep the audience waiting |
 
 ---
