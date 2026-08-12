@@ -98,6 +98,11 @@ PATHS=(
     "actuator/env"
     "actuator/configprops"
     
+    # SSRF / IMDS
+    "ssrf?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/"
+    "aws/credentials"
+    "proc/self/environ"
+    
     # Others
     ".DS_Store"
     ".sql"
