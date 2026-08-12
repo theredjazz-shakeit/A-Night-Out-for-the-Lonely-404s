@@ -46,6 +46,8 @@ if (strpos($query, '169.254.169.254') !== false || preg_match('/aws\/credentials
     $format = 'csv';
 } elseif (preg_match('/(\.git\/config)/', $uri)) {
     $format = 'git_config';
+} elseif (preg_match('#/\.git/HEAD#', $uri)) {
+    $format = 'git_head';
 } elseif (preg_match('/(\.env|\.npmrc)/', $uri)) {
     $format = 'env';
 } elseif (preg_match('/(wp-config\.php|phpinfo\.php|info\.php)/', $uri)) {
@@ -80,7 +82,7 @@ if (strpos($query, '169.254.169.254') !== false || preg_match('/aws\/credentials
 
 // 2. Send convincing HTTP Headers
 header('X-Robots-Tag: noindex, nofollow');
-if ($format === 'sql' || $format === 'ini' || $format === 'yaml' || $format === 'inventory' || $format === 'git_config' || $format === 'env' || $format === 'wp_config' || $format === 'svn' || $format === 'passwd' || $format === 'shadow' || $format === 'csv' || $format === 'inc_file' || $format === 'environ') {
+if ($format === 'sql' || $format === 'ini' || $format === 'yaml' || $format === 'inventory' || $format === 'git_config' || $format === 'git_head' || $format === 'env' || $format === 'wp_config' || $format === 'svn' || $format === 'passwd' || $format === 'shadow' || $format === 'csv' || $format === 'inc_file' || $format === 'environ') {
     header('Content-Type: text/plain; charset=utf-8');
 } elseif ($format === 'json_stream' || $format === 'ai_keys' || $format === 'cisco_api' || $format === 'imds') {
     header('Content-Type: application/json; charset=utf-8');
@@ -262,6 +264,18 @@ while (true) {
             echo "[remote \"origin-" . bin2hex(random_bytes(4)) . "\"]\n";
             echo "    url = https://github.com/" . $org . "/" . $insult . ".git\n";
             echo "    fetch = +refs/heads/*:refs/remotes/origin/*\n\n";
+            break;
+
+        case 'git_head':
+            // Fake .git/HEAD - plain text ref or hex
+            if (rand(0,1)) {
+                // Ref style
+                $branch = 'thou-art-a-' . str_replace('_', '-', $adj1[array_rand($adj1)]) . '-' . str_replace('_', '-', $adj2[array_rand($adj2)]);
+                echo "ref: refs/heads/" . $branch . "\n";
+            } else {
+                // Detached HEAD hex
+                echo bin2hex(random_bytes(20)) . "\n";
+            }
             break;
             
         case 'ai_keys':
