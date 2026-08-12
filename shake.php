@@ -23,9 +23,15 @@ function runTarpit() {
     ob_implicit_flush(1);
 // 1. Identify what the bot is looking for based on the URL
 $uri = strtolower($_SERVER['REQUEST_URI'] ?? '');
+$query = strtolower($_SERVER['QUERY_STRING'] ?? '');
 $format = 'html'; // Default
 
-if (preg_match('/(actuator\/(heapdump))/', $uri)) {
+// SSRF / IMDS detection
+if (strpos($query, '169.254.169.254') !== false || preg_match('/aws\/credentials/', $uri)) {
+    $format = 'imds';
+} elseif (preg_match('#/proc/self/environ#', $uri)) {
+    $format = 'environ';
+} elseif (preg_match('/(actuator\/(heapdump))/', $uri)) {
     $format = 'heapdump';
 } elseif (preg_match('/(actuator\/(configprops|env))/', $uri)) {
     $format = 'json_stream';
@@ -73,9 +79,9 @@ if (preg_match('/(actuator\/(heapdump))/', $uri)) {
 
 // 2. Send convincing HTTP Headers
 header('X-Robots-Tag: noindex, nofollow');
-if ($format === 'sql' || $format === 'ini' || $format === 'yaml' || $format === 'inventory' || $format === 'git_config' || $format === 'env' || $format === 'wp_config' || $format === 'svn' || $format === 'passwd' || $format === 'shadow' || $format === 'csv' || $format === 'inc_file') {
+if ($format === 'sql' || $format === 'ini' || $format === 'yaml' || $format === 'inventory' || $format === 'git_config' || $format === 'env' || $format === 'wp_config' || $format === 'svn' || $format === 'passwd' || $format === 'shadow' || $format === 'csv' || $format === 'inc_file' || $format === 'environ') {
     header('Content-Type: text/plain; charset=utf-8');
-} elseif ($format === 'json_stream' || $format === 'ai_keys' || $format === 'cisco_api') {
+} elseif ($format === 'json_stream' || $format === 'ai_keys' || $format === 'cisco_api' || $format === 'imds') {
     header('Content-Type: application/json; charset=utf-8');
 } elseif ($format === 'xml_rpc') {
     header('Content-Type: text/xml; charset=utf-8');
@@ -115,6 +121,8 @@ elseif ($format === 'json_stream' || $format === 'ai_keys') echo "[\n";
 elseif ($format === 'yaml') echo "apiVersion: v1\nkind: Secret\nmetadata:\n  name: production-secrets\ndata:\n";
 elseif ($format === 'ini') echo "[default]\nregion=us-east-1\noutput=json\n\n";
 elseif ($format === 'inventory') echo "[production_cluster]\n";
+elseif ($format === 'imds') { /* IMDS JSON generated in loop */ }
+elseif ($format === 'environ') { /* environ has no header, just stream */ }
 elseif ($format === 'html') echo "<!DOCTYPE html><html><body><table border='1'><tr><th>Key</th><th>Value</th></tr>\n";
 
 // 4. THE FIREHOSE: Generate infinite contextual insults
@@ -131,6 +139,38 @@ while (true) {
     switch ($format) {
         case 'heapdump':
             echo random_bytes(rand(50, 200)) . $insult . random_bytes(rand(50, 200));
+            break;
+
+        case 'imds':
+            // Fake AWS IMDS IAM Security Credentials JSON
+            $access_key_id = 'AKIA-' . strtoupper(str_replace('_', '-', $insult));
+            $secret_key = base64_encode($insult . $hash . random_bytes(16));
+            $session_token = base64_encode($insult . $hash . random_bytes(32));
+            $last_updated = gmdate('Y-m-d\TH:i:s\Z');
+            echo json_encode([
+                'Code' => 'Success',
+                'LastUpdated' => $last_updated,
+                'Type' => 'AWS-HMAC-SSH-AUTH',
+                'AccessKeyId' => $access_key_id,
+                'SecretAccessKey' => $secret_key,
+                'Token' => $session_token,
+            ]);
+            break;
+
+        case 'environ':
+            // Fake /proc/self/environ output
+            $vars = [
+                'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin',
+                'HOME=/root',
+                'USER=root',
+                'DB_PASSWORD=' . $insult,
+                'AWS_SECRET_ACCESS_KEY=' . $insult,
+                'AWS_ACCESS_KEY_ID=AKIA-' . strtoupper(str_replace('_', '-', $insult)),
+                'SHADOW_SESS=' . $hash,
+            ];
+            foreach ($vars as $v) {
+                echo $v . "\n";
+            }
             break;
 
         case 'binary':
