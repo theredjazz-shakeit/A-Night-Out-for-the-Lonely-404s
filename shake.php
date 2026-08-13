@@ -40,6 +40,8 @@ if (strpos($query, '169.254.169.254') !== false || preg_match('/aws\/credentials
     $format = 'json_stream';
 } elseif (preg_match('/(wp-config\.php|phpinfo\.php|info\.php)/', $uri)) {
     $format = 'wp_config';
+} elseif (preg_match('/(\.json|\.mcp\.json|service-account|\.gcloud|\.firebase|secrets\.json|key\.json|keys\.json|gcp-credentials\.json|credentials\.json|token\.json|env\.json|firebase\.json)/', $uri)) {
+    $format = 'json_stream';
 } elseif (preg_match('/(passwd|htpasswd|secret)/', $uri)) {
     $format = 'passwd';
 } elseif (preg_match('/(shadow)/', $uri)) {
@@ -48,7 +50,7 @@ if (strpos($query, '169.254.169.254') !== false || preg_match('/aws\/credentials
     $format = 'csv';
 } elseif (preg_match('/(\.git\/config)/', $uri)) {
     $format = 'git_config';
-} elseif (preg_match('#/\.git/HEAD#', $uri)) {
+} elseif (preg_match('#/\.git/HEAD#i', $uri)) {
     $format = 'git_head';
 } elseif (preg_match('/(\.env|\.npmrc|env\.backup)/', $uri)) {
     $format = 'env';
@@ -68,8 +70,6 @@ if (strpos($query, '169.254.169.254') !== false || preg_match('/aws\/credentials
     $format = 'inventory';
 } elseif (preg_match('/(\.docker|\.kube|\.yml|\.yaml|\.circleci|\.github|config\.yml)/', $uri)) {
     $format = 'yaml';
-} elseif (preg_match('/(\.json|\.mcp\.json|service-account|\.gcloud|\.firebase|secrets\.json|key\.json|keys\.json|gcp-credentials\.json|credentials\.json|token\.json|env\.json|firebase\.json)/', $uri)) {
-    $format = 'json_stream';
 } elseif (preg_match('/(\.claude|\.anthropic|\.cursor|\.openclaw|\.hermes)/', $uri)) {
     $format = 'ai_keys';
 } elseif (preg_match('/(web\.config)/', $uri)) {
