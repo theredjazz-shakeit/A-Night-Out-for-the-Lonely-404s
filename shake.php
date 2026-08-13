@@ -15,7 +15,7 @@ closelog();
 
 // === SECTION START: LOGIC / FUNCTIONS ===
 function runTarpit() {
-    global $adj1, $adj2, $nouns, $realistic_json_keys, $realistic_ini_keys;
+    global $adj1, $adj2, $nouns, $realistic_json_keys, $realistic_ini_keys, $shakespeare_chars;
     // Ensure timeouts and buffering are completely disabled
     set_time_limit(0);
     @ini_set('zlib.output_compression', 0);
@@ -190,10 +190,10 @@ while (true) {
             // Fake /etc/passwd or .htpasswd entries
             if (strpos($uri, 'htpasswd') !== false || strpos($uri, 'secret') !== false) {
                 $salt = bin2hex(random_bytes(4));
-                echo "admin:\$apr1\$" . $salt . "$" . base64_encode($insult . $hash) . "\n";
+                $char = $shakespeare_chars[array_rand($shakespeare_chars)];
+                echo $char . ":\$apr1\$" . $salt . "$" . base64_encode($insult . $hash) . "\n";
             } else {
-                $names = ["macbeth", "mercutio", "hamlet", "puck", "iago"];
-                $name = $names[array_rand($names)];
+                $name = $shakespeare_chars[array_rand($shakespeare_chars)];
                 $uid = rand(1000, 9999);
                 $gid = rand(1000, 9999);
                 $clean_insult = str_replace('_', ' ', $insult);
@@ -203,8 +203,7 @@ while (true) {
             
         case 'shadow':
             // Fake /etc/shadow entries
-            $names = ["macbeth", "mercutio", "hamlet", "puck", "iago"];
-            $name = $names[array_rand($names)];
+            $name = $shakespeare_chars[array_rand($shakespeare_chars)];
             $salt = bin2hex(random_bytes(4));
             $crypt = "\$6\$" . $salt . "$" . base64_encode($insult . $hash);
             echo $name . ":" . $crypt . ":" . rand(15000, 19000) . ":0:99999:7:::\n";
@@ -347,7 +346,8 @@ while (true) {
             
         case 'sql':
             // Fake SQL Database Dumps
-            echo "INSERT INTO `users` (`username`, `password_hash`, `email`) VALUES ('" . $insult . "', '\$2y\$10\$" . $hash . "a', '" . $insult . "@scad.edu');\n";
+            $char = $shakespeare_chars[array_rand($shakespeare_chars)];
+            echo "INSERT INTO `users` (`username`, `password_hash`, `email`) VALUES ('" . $char . "', '\$2y\$10\$" . $hash . "a', '" . $char . "@scad.edu');\n";
             break;
             
             case 'cisco_api':
@@ -5441,6 +5441,19 @@ $realistic_ini_keys = [
     "spring.datasource.username", "spring.datasource.password", "api.key"
 ];
 // UNIQUE_MARKER_END_REALISTIC_INI_KEYS
+$shakespeare_chars = [
+    "hamlet","macbeth","lady_macbeth","macduff","banquo","malcolm",
+    "romeo","juliet","mercutio","tybalt","capulet","montague",
+    "othello","iago","cassio","desdemona","emilia",
+    "king_lear","edmund","edgar","cordelia","goneril","regan",
+    "prospero","miranda","caliban","ariel",
+    "richard_iii","buckingham","tyrrell",
+    "prospero","puck","oberon","titania",
+    "polonius","laertes","ophelia","claudius","gertrude",
+    "shylock","portia","bassanio",
+    "falstaff","prince_hall","hotspur",
+    "benvolio","nurse"
+];
 // UNIQUE_MARKER_END_DATA_BLOCK
 // === SECTION END: DATA / WORD LISTS ===
 
