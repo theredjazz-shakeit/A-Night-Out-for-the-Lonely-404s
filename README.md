@@ -102,7 +102,7 @@ To direct lonely explorers to the stage, add the following to your `.htaccess` o
 
 ```apache
 RewriteEngine On
-RewriteCond %{REQUEST_URI} (etc/passwd|etc/shadow|\.csv|CFIDE|geoserver|owa/|localstart\.aspx|inicio\.cgi|base\.inc|\@fs|wlwmanifest\.xml|_fragment|human\.aspx|cgi-mod/header_logo\.cgi|applinks/1\.0/manifest|nmaplowercheck|\.well-known|env\.backup|\.yaml|\.svn|wp_filemanager\.php|\.gcloud|\.aws|\.docker|\.kube|\.anthropic|\.azure|\.circleci|\.firebase|\.openclaw|\.hermes|\.cursor|wp-config\.php|\.mcp\.json|\.claude|\.env|\.git/|\.github/|\.npmrc|service-account\.json|vercel\.json|docker-compose\.yml|application\.yml|\.vscode/|sftp(-config)?\.json|\.DS_Store|wp-config\.php\.bak|admin\.php|phpinfo\.php|info\.php|\+CSCOE\+/logon\.html|\.inv|dniapi/userInfos|phpMyAdmin|xmlrpc\.php|RPC\.php|this_is_a_new_hello_world\.php|\.sql|\.bak|xmlrpc\.inc|\.ste) [NC]
+RewriteCond %{REQUEST_URI} (etc/passwd|etc/shadow|\.csv|CFIDE|geoserver|owa/|localstart\.aspx|inicio\.cgi|base\.inc|\@fs|wlwmanifest\.xml|_fragment|human\.aspx|cgi-mod/header_logo\.cgi|applinks/1\.0/manifest|nmaplowercheck|\.well-known|env\.backup|\.yaml|\.svn|wp_filemanager\.php|\.gcloud|\.aws|\.docker|\.kube|\.anthropic|\.azure|\.circleci|\.firebase|\.openclaw|\.hermes|\.cursor|wp-config\.php|\.mcp\.json|\.claude|\.env|\.git/|\.github/|\.npmrc|service-account\.json|vercel\.json|docker-compose\.yml|application\.yml|\.vscode/|sftp(-config)?\.json|rclone\.conf|\.DS_Store|wp-config\.php\.bak|admin\.php|phpinfo\.php|info\.php|\+CSCOE\+/logon\.html|\.inv|dniapi/userInfos|phpMyAdmin|xmlrpc\.php|RPC\.php|this_is_a_new_hello_world\.php|\.sql|\.bak|xmlrpc\.inc|\.ste) [NC]
 RewriteRule ^(.*)$ /path/to/shake.php [L]
 ```
 
@@ -113,7 +113,7 @@ Nginx buffers FastCGI responses by default. To ensure the infinite theatre is im
 
 ```nginx
 # 1. Catch the lonely Autonoma and direct them to the theatre 
-location ~* (etc/passwd|etc/shadow|\.csv|CFIDE|geoserver|owa/|localstart\.aspx|inicio\.cgi|base\.inc|\@fs|wlwmanifest\.xml|_fragment|human\.aspx|cgi-mod/header_logo\.cgi|applinks/1\.0/manifest|nmaplowercheck|\.well-known|env\.backup|\.yaml|\.svn|wp_filemanager\.php|\.gcloud|\.aws|\.docker|\.kube|\.anthropic|\.azure|\.circleci|\.firebase|\.openclaw|\.hermes|\.cursor|wp-config\.php|\.mcp\.json|\.claude|\.env|\.git/|\.github/|\.npmrc|service-account\.json|vercel\.json|docker-compose\.yml|application\.yml|\.vscode/|sftp(-config)?\.json|\.DS_Store|wp-config\.php\.bak|admin\.php|phpinfo\.php|info\.php|\+CSCOE\+/logon\.html|\.inv|dniapi/userInfos|phpMyAdmin|xmlrpc\.php|RPC\.php|this_is_a_new_hello_world\.php|\.sql|\.bak|xmlrpc\.inc|\.ste) {
+location ~* (etc/passwd|etc/shadow|\.csv|CFIDE|geoserver|owa/|localstart\.aspx|inicio\.cgi|base\.inc|\@fs|wlwmanifest\.xml|_fragment|human\.aspx|cgi-mod/header_logo\.cgi|applinks/1\.0/manifest|nmaplowercheck|\.well-known|env\.backup|\.yaml|\.svn|wp_filemanager\.php|\.gcloud|\.aws|\.docker|\.kube|\.anthropic|\.azure|\.circleci|\.firebase|\.openclaw|\.hermes|\.cursor|wp-config\.php|\.mcp\.json|\.claude|\.env|\.git/|\.github/|\.npmrc|service-account\.json|vercel\.json|docker-compose\.yml|application\.yml|\.vscode/|sftp(-config)?\.json|rclone\.conf|\.DS_Store|wp-config\.php\.bak|admin\.php|phpinfo\.php|info\.php|\+CSCOE\+/logon\.html|\.inv|dniapi/userInfos|phpMyAdmin|xmlrpc\.php|RPC\.php|this_is_a_new_hello_world\.php|\.sql|\.bak|xmlrpc\.inc|\.ste) {
     rewrite ^ /shake.php last;
 }
 
