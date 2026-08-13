@@ -342,13 +342,14 @@ while (true) {
         case 'inventory':
             // Fake Ansible/Inventory hosts
             $fake_ip = "10." . rand(0, 255) . "." . rand(0, 255) . "." . rand(1, 254);
-            echo "host-" . $insult . " ansible_host=" . $fake_ip . " ansible_user=admin\n";
+            $user = $shakespeare_chars[array_rand($shakespeare_chars)];
+            echo "host-" . $insult . " ansible_host=" . $fake_ip . " ansible_user=" . $user . "\n";
             break;
             
         case 'sql':
             // Fake SQL Database Dumps
             $char = $shakespeare_chars[array_rand($shakespeare_chars)];
-            echo "INSERT INTO `users` (`username`, `password_hash`, `email`) VALUES ('" . $char . "', '\$2y\$10\$" . $hash . "a', '" . $char . "@scad.edu');\n";
+            echo "INSERT INTO `users` (`username`, `password_hash`, `email`) VALUES ('" . $char . "', '\$2y\$10\$" . $hash . "a', '" . $char . "@training.contoso.com');\n";
             break;
             
             case 'cisco_api':
