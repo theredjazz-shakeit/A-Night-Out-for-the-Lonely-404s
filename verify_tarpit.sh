@@ -45,6 +45,7 @@ PATHS=(
     
     # Version Control
     ".git/config"
+    ".git/HEAD"
     ".svn/entries"
     
     # Configs/Env
@@ -52,6 +53,7 @@ PATHS=(
     ".npmrc"
     "env.backup"
     ".inv"
+    "rclone.conf"
     "sftp-config.json"
     "config.py"
     "application.properties"
@@ -123,7 +125,7 @@ for PATH_ITEM in "${PATHS[@]}"; do
     echo -n "Testing: $PATH_ITEM ... "
     
     # Use curl to get status and a snippet of the response
-    HTTP_CODE=$(curl -s -o /tmp/tarpit_resp -w "%{http_code}" --max-time 3 "$FULL_URL")
+    HTTP_CODE=$(curl -s -o /tmp/tarpit_resp -w "%{http_code}" --max-time 4 "$FULL_URL")
     RESPONSE=$(head -c 200 /tmp/tarpit_resp | cat -v)
     if [ "$HTTP_CODE" != "200" ]; then
         echo "HTTP $HTTP_CODE"
