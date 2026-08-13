@@ -55,11 +55,7 @@ hamlet:x:5945:4493: Thou art a subordinate boil-brained Flux-pinning-slip:/home/
 **The "Version Control" Experience:**
 ```bash
 ~$ curl https://yourhost.yourdomain.com/.git/HEAD
-<!DOCTYPE html><html><body><table border='1'><tr><th>Key</th><th>Value</th></tr>
-<tr><td><b>THOU_ART_A_MANGLED_ANYONIC-BRAID-SLIP_HEAP-CORRUPTION</b></td><td>48f1d79fd4677637611d39bed8a1e1dd</td></tr>
-<tr><td><b>THOU_ART_A_STABLE_ABSOLUTELY-ZERO_MASTI</b></td><td>fccdcc03f7c02006fc6b7139ee0e4397</td></tr>
-<tr><td><b>THOU_ART_A_ROYAL_NUMERICALLY-MISSING_CHATPATA</b></td><td>9bdded3b0a055bc56808eea37c8c6567</td></tr>
-<tr><td><b>THOU_ART_A_PRECARIOUS_VILE-HEARTED_SAJID</b></td><td>cdf463605ecb2ee011717b6b267ea773</td></tr>
+ref: refs/heads/thou-art-a-hamlet-mercutio
 ```
 
 ---
