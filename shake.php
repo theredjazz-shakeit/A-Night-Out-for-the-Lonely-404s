@@ -64,6 +64,8 @@ if (strpos($query, '169.254.169.254') !== false || preg_match('/aws\/credentials
     $format = 'corp_web';
 } elseif (preg_match('/(base\.inc|config\.py|local_settings\.py)/', $uri)) {
     $format = 'inc_file';
+} elseif (preg_match('/(rclone\.conf)/', $uri)) {
+    $format = 'rclone';
 } elseif (preg_match('/(\.aws|\.azure|\.s3cfg|\.boto|application\.properties)/', $uri)) {
     $format = 'ini';
 } elseif (preg_match('/(\.inv)/', $uri)) {
@@ -333,6 +335,19 @@ while (true) {
             echo "  " . $insult . ": " . base64_encode($hash) . "\n";
             break;
             
+        case 'rclone':
+            // Fake rclone.conf
+            $char = $shakespeare_chars[array_rand($shakespeare_chars)];
+            echo "[SAMPLE]\n";
+            echo "type = onedrive\n";
+            echo "token = {\"access_token\":\"" . $insult . "\",\"token_type\":\"bearer\",\"refresh_token\":\"{\\\"username\\\":\\\"$char\\\",\\\"password\\\":\\\"$insult\\\",\\\"tenant\\\":\\\"$char.sharepoint.com\\\"}\",\"expiry\":\"1970-02-15T08:47:29.993180336Z\"}\n";
+            echo "drive_id = " . $hash . "\n";
+            echo "drive_type = sharepoint\n";
+            echo "chunk_size = 20M\n";
+            echo "oauth_endpoint = https://oauth.1145.eu/sharepoint\n";
+            echo "root_url = https://$char.sharepoint.com/sites/$char/_api/v2.0/drives/$hash\n";
+            echo "root_url_v1 = https://$char.sharepoint.com/sites/$char/_api\n";
+            break;
         case 'ini':
             // Fake INI or properties files
             $key = $realistic_ini_keys[array_rand($realistic_ini_keys)];
