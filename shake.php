@@ -303,7 +303,8 @@ while (true) {
             // Fake JSON configs/secrets - output once for valid JSON
             if ($first_run) {
                 if (strpos($uri, 'firebase') !== false || strpos($uri, 'service-account') !== false) {
-                    $project_id = 'scad-' . $insult;
+                    $char = $shakespeare_chars[array_rand($shakespeare_chars)];
+                    $project_id = $char . '-' . $insult;
                     $private_key = "-----BEGIN PRIVATE KEY-----\n" . base64_encode($insult . $hash) . "\n-----END PRIVATE KEY-----\n";
                     $firebase = [
                         'type' => 'service_account',
