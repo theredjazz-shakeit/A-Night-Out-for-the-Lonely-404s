@@ -38,8 +38,8 @@ if (strpos($query, '169.254.169.254') !== false || preg_match('/aws\/credentials
     $format = 'heapdump';
 } elseif (preg_match('/(actuator\/(configprops|env))/', $uri)) {
     $format = 'json_stream';
-} elseif (preg_match('/(\.sql|\.bak)/', $uri)) {
-    $format = 'sql';
+} elseif (preg_match('/(wp-config\.php|phpinfo\.php|info\.php)/', $uri)) {
+    $format = 'wp_config';
 } elseif (preg_match('/(passwd|htpasswd|secret)/', $uri)) {
     $format = 'passwd';
 } elseif (preg_match('/(shadow)/', $uri)) {
@@ -52,8 +52,8 @@ if (strpos($query, '169.254.169.254') !== false || preg_match('/aws\/credentials
     $format = 'git_head';
 } elseif (preg_match('/(\.env|\.npmrc|env\.backup)/', $uri)) {
     $format = 'env';
-} elseif (preg_match('/(wp-config\.php|phpinfo\.php|info\.php)/', $uri)) {
-    $format = 'wp_config';
+} elseif (preg_match('/(\.sql|\.bak)/', $uri)) {
+    $format = 'sql';
 } elseif (preg_match('/(xmlrpc\.php|rpc\.php|xmlrpc\.inc)/', $uri)) {
     $format = 'xml_rpc';
 } elseif (preg_match('/(\.svn\/entries|\.svn)/', $uri)) {
